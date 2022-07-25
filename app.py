@@ -1,7 +1,7 @@
 import os
 from utils import build_query
 
-from flask import Flask, request
+from flask import Flask, request, Response
 from flask_restx import abort
 
 app = Flask(__name__)
@@ -12,7 +12,7 @@ DATA_DIR = os.path.join(BASE_DIR, "data")
 
 
 @app.route("/perform_query")
-def perform_query():
+def perform_query() -> Response:
     cmd_1 = request.args.get("cmd_1")
     val_1 = request.args.get("val_1")
     cmd_2 = request.args.get("cmd_2")
@@ -22,18 +22,17 @@ def perform_query():
     if not (cmd_1 and val_1 and file_name):
         abort(400)
 
-    file_path = os.path.join(DATA_DIR, file_name)
+    file_path = os.path.join(DATA_DIR, str(file_name))
 
     if os.path.exists(file_path):
         return abort(400, "Wrong filepath")
 
     with open(file_path) as file:
-        res = build_query(cmd_1, val_1, file)
+        res = build_query(str(cmd_1), str(val_1), file)
         if cmd_2 and val_2:
-            res = build_query(cmd_2, val_2, res)
-        res = "\n".join(res)
+            res = build_query(str(cmd_2), str(val_2), iter(res))
 
-    return app.response_class(res, content_type="text/plain")
+    return app.response_class("\n".join(res), content_type="text/plain")
 
 
 if __name__ == "__main__":

@@ -1,19 +1,26 @@
-def build_query(cmd, val, file_list):
+from typing import Iterator, Any, List
+import re
+
+
+def build_query(cmd: str, val: str, file_list: Iterator) -> List[Any]:
     if cmd == "filter":
-        res = filter(lambda x: val in x, file_list)
+        res = list(filter(lambda x: val in x, file_list))
         return res
     if cmd == 'map':
-        val = int(val)
-        res = [x.split()[val] for x in file_list]
+        res = list([x.split()[int(val)] for x in file_list])
         return res
     if cmd == 'unique':
         res = list(set(file_list))
         return res
     if cmd == "sort":
         reverse = val == "desc"
-        res = sorted (file_list, reverse=reverse)
+        res = list(sorted (file_list, reverse=reverse))
         return res
     if cmd == "limit":
-        val = int(val)
-        res = list(file_list)[:val]
+        res = list(file_list)[:int(val)]
         return res
+    if cmd == "regex":
+        regex = re.compile(val)
+        res = list(filter(lambda x: regex.serach(x), file_list))
+        return res
+    return []
